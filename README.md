@@ -57,7 +57,7 @@ neforgesebla → ne.forges.ebl.a
 ### Core Capabilities
 
 - **Recursive Morphological Analysis**: Breaks down compound words using intelligent backtracking (supports up to 9 morphemes per word)
-- **Dictionary-Based Validation**: Uses a 10,696-entry morpheme database with detailed grammatical metadata
+- **Dictionary-Based Validation**: Uses a 10,695-entry morpheme database (10,543 unique morphemes loaded) with detailed grammatical metadata
 - **Synthesis Rule Checking**: Validates morpheme combinations according to Esperanto's word formation rules
 - **Context-Aware Validation**: Checks compatibility based on:
   - **Part of Speech**: 19 types (noun, verb, adjective, adverb, prefix, suffix, participle, etc.)
@@ -153,14 +153,14 @@ print(x_to_accent("CXapelo"))
 ```
 
 **X-System Mapping:**
-| X-System | Unicode | Letter Name |
-|----------|---------|-------------|
+| X-System | Unicode | Letter Name  |
+| -------- | ------- | ------------ |
 | cx, CX   | ĉ, Ĉ    | c-circumflex |
 | gx, GX   | ĝ, Ĝ    | g-circumflex |
 | hx, HX   | ĥ, Ĥ    | h-circumflex |
 | jx, JX   | ĵ, Ĵ    | j-circumflex |
 | sx, SX   | ŝ, Ŝ    | s-circumflex |
-| ux, UX   | ŭ, Ŭ    | u-breve |
+| ux, UX   | ŭ, Ŭ    | u-breve      |
 
 ### 2. check_word - Single Word Analysis
 
@@ -211,9 +211,9 @@ print(result.word)   # fingr.o.montr.i
 # The 'o' aids pronunciation between 'fingr' and 'montr'
 
 # Multiple suffixes
-result = check_word("malĝentilestrino")
-print(result.word)   # mal.ĝentil.estr.in.o
-# mal- (opposite) + ĝentil (polite) + -estr- (leader) + -in- (female) + -o (noun)
+result = check_word("malĝentileco")
+print(result.word)   # mal.ĝentil.ec.o
+# mal- (opposite) + ĝentil (polite) + -ec- (quality) + -o (noun)
 
 # Accusative pronoun (special case)
 result = check_word("vin")
@@ -293,7 +293,7 @@ print(result)
 text = "La malbonkomprenita misdirita vorto kaŭzis grandan problemon."
 result = analyze_string(text, True)
 print(result)
-# Output: La mal.bon.kompren.it.a mis.dir.it.a vort.o kaŭz.is grand.an problem.o.n
+# Output: La mal.bon.kompren.it.a mis.dir.it.a vort.o kaŭz.is grand.an problem.on
 
 # Scientific text
 text = "Birdoj (Aves) estas klaso de vertebruloj kun ĉirkaŭ 9 ĝis 10 mil vivantaj specioj."
@@ -391,7 +391,7 @@ with open("chapters/chapter1_analyzed.txt", "w") as f:
 
 ### 1. Dictionary Structure
 
-The morpheme database (`literumilo/data/vortaro.tsv`) contains **10,696 entries**, each with **9 fields**:
+The morpheme database (`literumilo/data/vortaro.tsv`) contains **10,695 rows** (10,543 unique morphemes after loading), each with **9 fields**:
 
 ```tsv
 morpheme	part_of_speech	meaning	transitivity	without_ending	with_ending	synthesis	rarity	flag
@@ -402,17 +402,17 @@ ul	SUBST	PERSONO	N	N	KF	S	0	R
 
 **Field Descriptions:**
 
-| Field | Values | Description |
-|-------|--------|-------------|
-| **morpheme** | String | Base morpheme form (lowercase, no accents in x-form) |
-| **part_of_speech** | SUBST, VERBO, ADJ, ADVERBO, PREFIKSO, SUFIKSO, PREPOZICIO, KONJUNKCIO, SUBJUNKCIO, INTERJEKCIO, TEHXPREFIKSO, ARTIKOLO, PARTICIPO, MALLONGIGO, LITERO, NUMERO, PRONOMO, PRONOMADJ, SUBSTVERBO | Grammatical category |
-| **meaning** | N, PERSONO, ANIMALO, URBO, LANDO, PROFESIO, PARENCO, ETNO, etc. (118 types) | Semantic category for synthesis validation |
-| **transitivity** | T (transitive), N (intransitive), X (both) | For verbs only |
-| **without_ending** | SF (sen finaĵo - can stand alone), N (no) | Words like 'ne', 'dum', 'post' |
-| **with_ending** | KF (kun finaĵo - takes ending), N (no) | Most roots take endings |
-| **synthesis** | P (prefix), S (suffix), PRT (participle), LM (limited), NLM (not limited), N (no combination) | Combinability rules |
-| **rarity** | 0-4 | 0=very common, 4=rare |
-| **flag** | R (root), K (compound), X (exclude) | X=exclude from dictionary |
+| Field              | Values                                                                                                                                                                                        | Description                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **morpheme**       | String                                                                                                                                                                                        | Base morpheme form (lowercase, no accents in x-form) |
+| **part_of_speech** | SUBST, VERBO, ADJ, ADVERBO, PREFIKSO, SUFIKSO, PREPOZICIO, KONJUNKCIO, SUBJUNKCIO, INTERJEKCIO, TEHXPREFIKSO, ARTIKOLO, PARTICIPO, MALLONGIGO, LITERO, NUMERO, PRONOMO, PRONOMADJ, SUBSTVERBO | Grammatical category                                 |
+| **meaning**        | N, PERSONO, ANIMALO, URBO, LANDO, PROFESIO, PARENCO, ETNO, etc. (118 types)                                                                                                                   | Semantic category for synthesis validation           |
+| **transitivity**   | T (transitive), N (intransitive), X (both)                                                                                                                                                    | For verbs only                                       |
+| **without_ending** | SF (sen finaĵo - can stand alone), N (no)                                                                                                                                                     | Words like 'ne', 'dum', 'post'                       |
+| **with_ending**    | KF (kun finaĵo - takes ending), N (no)                                                                                                                                                        | Most roots take endings                              |
+| **synthesis**      | P (prefix), S (suffix), PRT (participle), LM (limited), NLM (not limited), N (no combination)                                                                                                 | Combinability rules                                  |
+| **rarity**         | 0-4                                                                                                                                                                                           | 0=very common, 4=rare                                |
+| **flag**           | R (root), K (compound), X (exclude)                                                                                                                                                           | X=exclude from dictionary                            |
 
 **Key Insight:** The synthesis and meaning fields enable context-aware validation. For example:
 - A prefix marked with meaning=PARENCO (kinship) can only attach to kinship terms
@@ -421,14 +421,16 @@ ul	SUBST	PERSONO	N	N	KF	S	0	R
 
 ### 2. Grammatical Endings
 
-Literumilo recognizes **15 standard Esperanto endings**:
+Literumilo recognizes **16 standard Esperanto endings**:
 
-| Category | Endings | Examples |
-|----------|---------|----------|
-| **Noun** | o, on, oj, ojn | hund.o, hund.o.n, hund.oj, hund.o.jn |
-| **Adjective** | a, an, aj, ajn | bel.a, bel.an, bel.aj, bel.a.jn |
-| **Verb** | i, is, as, os, u, us | kur.i, kur.is, kur.as, kur.os, kur.u, kur.us |
-| **Adverb** | e, en | rapid.e, rapid.en |
+| Category      | Endings              | Examples                                     |
+| ------------- | -------------------- | -------------------------------------------- |
+| **Noun**      | o, on, oj, ojn       | hund.o, hund.on, hund.oj, hund.ojn           |
+| **Adjective** | a, an, aj, ajn       | bel.a, bel.an, bel.aj, bel.a.jn              |
+| **Verb**      | i, is, as, os, u, us | kur.i, kur.is, kur.as, kur.os, kur.u, kur.us |
+| **Adverb**    | e, en                | rapid.e, rapid.en                            |
+
+The analyzer retains each grammatical ending as a single segment in its output, so accusative forms appear as `hund.on` rather than `hund.o.n`.
 
 **Ending Detection Algorithm:**
 
@@ -584,19 +586,19 @@ per-, por-, pro-, pri-, antaŭ-, post-, apud-, ĉe-, dum-, ĝis-, laŭ-, preter-
 
 **C. Semantic Prefixes** (meaning-specific)
 
-| Prefix | Meaning | Attaches To | Examples |
-|--------|---------|-------------|----------|
-| **mal-** | opposite | verbs, adjectives, adverbs | `mal.feliĉ.a` (unhappy), `mal.bona` (bad) |
-| **ge-** | both sexes | persons, animals | `ge.patr.oj` (parents), `ge.hund.oj` (male and female dogs) |
-| **bo-** | in-law | kinship terms only | `bo.patr.o` (father-in-law), `bo.frat.o` (brother-in-law) |
-| **eks-** | ex-, former | persons only | `eks.prezident.o` (ex-president) |
-| **ne-** | not | adjectives, adverbs, participles | `ne.taŭg.a` (unsuitable), `ne.far.ebl.a` (unfeasible) |
-| **pra-** | ancient, great- | people, time periods | `pra.avino` (great-grandmother), `pra.hom.o` (primitive human) |
-| **pseŭdo-** | false, pseudo- | nouns, adjectives | `pseŭdo.scienc.o` (pseudoscience) |
-| **sin-** | self- (reflexive) | transitive verbs only | `sin.kritik.i` (to criticize oneself) |
-| **po-** | apiece, at rate of | creates adverbs | `po.pec.e` (by pieces) |
-| **ĉi-** | this here | creates adjectives/adverbs | `ĉi.vesper.e` (this evening) |
-| **cis-** | on near side | rivers, mountains | `cis.alp.a` (cisalpine) |
+| Prefix      | Meaning            | Attaches To                      | Examples                                                       |
+| ----------- | ------------------ | -------------------------------- | -------------------------------------------------------------- |
+| **mal-**    | opposite           | verbs, adjectives, adverbs       | `mal.feliĉ.a` (unhappy), `mal.bona` (bad)                      |
+| **ge-**     | both sexes         | persons, animals                 | `ge.patr.oj` (parents), `ge.hund.oj` (male and female dogs)    |
+| **bo-**     | in-law             | kinship terms only               | `bo.patr.o` (father-in-law), `bo.frat.o` (brother-in-law)      |
+| **eks-**    | ex-, former        | persons only                     | `eks.prezident.o` (ex-president)                               |
+| **ne-**     | not                | adjectives, adverbs, participles | `ne.taŭg.a` (unsuitable), `ne.far.ebl.a` (unfeasible)          |
+| **pra-**    | ancient, great-    | people, time periods             | `pra.avino` (great-grandmother), `pra.hom.o` (primitive human) |
+| **pseŭdo-** | false, pseudo-     | nouns, adjectives                | `pseŭdo.scienc.o` (pseudoscience)                              |
+| **sin-**    | self- (reflexive)  | transitive verbs only            | `sin.kritik.i` (to criticize oneself)                          |
+| **po-**     | apiece, at rate of | creates adverbs                  | `po.pec.e` (by pieces)                                         |
+| **ĉi-**     | this here          | creates adjectives/adverbs       | `ĉi.vesper.e` (this evening)                                   |
+| **cis-**    | on near side       | rivers, mountains                | `cis.alp.a` (cisalpine)                                        |
 
 **Implementation Example:**
 
@@ -633,37 +635,37 @@ Suffixes transform the meaning and often the part of speech of the morphemes the
 
 **Major Suffixes:**
 
-| Suffix | Meaning | Attaches To | Creates | Example |
-|--------|---------|-------------|---------|---------|
-| **-ul** | person characterized by | adjectives, verbs (not persons) | PERSONO | `riĉ.ul.o` (rich person) |
-| **-ej** | place | verbs, nouns (not places) | LOKO | `manĝ.ej.o` (restaurant) |
-| **-il** | tool, instrument | verbs | ILO | `ŝraŭb.il.o` (screwdriver) |
-| **-in** | female | persons, animals | female version | `patr.in.o` (mother) |
-| **-id** | offspring | animals, ethnicities | young animal | `kat.id.o` (kitten) |
-| **-an** | member of group | nouns (not persons) | PERSONO | `urb.an.o` (city dweller) |
-| **-ist** | professional, supporter | nouns, verbs (not persons) | PERSONO | `den.ist.o` (dentist) |
-| **-estr** | leader | nouns | PERSONO | `ŝip.estr.o` (ship captain) |
-| **-ig** | to cause, make | any (except nouns) | VERBO-transitive | `ruĝ.ig.i` (to redden) |
-| **-iĝ** | to become | any (except nouns) | VERBO-intransitive | `ruĝ.iĝ.i` (to become red) |
-| **-ad** | continuous action | verbs, nouns | VERBO | `kur.ad.i` (to run repeatedly) |
-| **-aĉ** | bad quality | any | same POS | `hund.aĉ.o` (mongrel) |
-| **-ebl** | able to be [verb]-ed | transitive verbs | ADJ | `vid.ebl.a` (visible) |
-| **-em** | tendency to | verbs, adjectives | ADJ | `labor.em.a` (industrious) |
-| **-ec** | quality, state | adjectives, nouns | SUBST | `bel.ec.o` (beauty) |
-| **-ar** | collection of | nouns, participles | SUBST | `arb.ar.o` (forest) |
-| **-aĵ** | concrete thing | adjectives, participles | SUBST | `manĝ.aĵ.o` (food) |
-| **-eg** | augmentative (big) | nouns, adjectives, verbs | same POS | `dom.eg.o` (mansion) |
-| **-et** | diminutive (small) | nouns, adjectives, verbs | same POS | `dom.et.o` (cottage) |
-| **-end** | must be [verb]-ed | transitive verbs | ADJ | `pag.end.a` (payable) |
-| **-ind** | worthy to be [verb]-ed | transitive verbs | ADJ | `vid.ind.a` (worth seeing) |
-| **-er** | piece, fragment | nouns | SUBST | `mon.er.o` (coin) |
-| **-ik** | science, field | nouns | SUBST | `fizik.o` (physics) |
-| **-ing** | holder | nouns | SUBST | `kandel.ing.o` (candlestick) |
-| **-ism** | doctrine, practice | nouns | SUBST | `ideal.ism.o` (idealism) |
-| **-uj** | container, tree, country | nouns | SUBST | `pom.uj.o` (apple tree) |
-| **-obl** | multiple | numbers | ADJ | `du.obl.e` (double) |
-| **-on** | fraction | numbers | SUBST | `kvar.on.o` (quarter) |
-| **-op** | collective | numbers | SUBST | `tri.op.o` (trio) |
+| Suffix    | Meaning                  | Attaches To                                                    | Creates            | Example                        |
+| --------- | ------------------------ | -------------------------------------------------------------- | ------------------ | ------------------------------ |
+| **-ul**   | person characterized by  | nouns/verbs/adjectives/participles (not persons), prepositions | PERSONO            | `riĉ.ul.o` (rich person)       |
+| **-ej**   | place                    | nouns/verbs/adjectives (not already "place")                   | LOKO               | `manĝ.ej.o` (restaurant)       |
+| **-il**   | tool, instrument         | verbs                                                          | ILO                | `ŝraŭb.il.o` (screwdriver)     |
+| **-in**   | female                   | persons, animals                                               | female version     | `patr.in.o` (mother)           |
+| **-id**   | offspring                | animals, ethnicities                                           | young animal       | `kat.id.o` (kitten)            |
+| **-an**   | member of group          | nouns (not persons)                                            | PERSONO            | `urb.an.o` (city dweller)      |
+| **-ist**  | professional, supporter  | nouns/adjectives/verbs (not persons)                           | PERSONO            | `den.ist.o` (dentist)          |
+| **-estr** | leader                   | nouns                                                          | PERSONO            | `ŝip.estr.o` (ship captain)    |
+| **-ig**   | to cause, make           | morphemes ≤ adverb, prepositions/prefixes                      | VERBO-transitive   | `ruĝ.ig.i` (to redden)         |
+| **-iĝ**   | to become                | morphemes ≤ adverb, prepositions/prefixes                      | VERBO-intransitive | `ruĝ.iĝ.i` (to become red)     |
+| **-ad**   | continuous action        | verbs, nouns                                                   | VERBO              | `kur.ad.i` (to run repeatedly) |
+| **-aĉ**   | bad quality              | any                                                            | same POS           | `hund.aĉ.o` (mongrel)          |
+| **-ebl**  | able to be [verb]-ed     | transitive verbs                                               | ADJ                | `vid.ebl.a` (visible)          |
+| **-em**   | tendency to              | nouns/adjectives/verbs                                         | ADJ                | `labor.em.a` (industrious)     |
+| **-ec**   | quality, state           | adjectives, nouns                                              | SUBST              | `bel.ec.o` (beauty)            |
+| **-ar**   | collection of            | nouns, participles                                             | SUBST              | `arb.ar.o` (forest)            |
+| **-aĵ**   | concrete thing           | nouns/verbs/adjectives, prepositions, participles              | SUBST              | `manĝ.aĵ.o` (food)             |
+| **-eg**   | augmentative (big)       | nouns, adjectives, verbs                                       | same POS           | `dom.eg.o` (mansion)           |
+| **-et**   | diminutive (small)       | nouns, adjectives, verbs                                       | same POS           | `dom.et.o` (cottage)           |
+| **-end**  | must be [verb]-ed        | transitive verbs                                               | ADJ                | `pag.end.a` (payable)          |
+| **-ind**  | worthy to be [verb]-ed   | transitive verbs                                               | ADJ                | `vid.ind.a` (worth seeing)     |
+| **-er**   | piece, fragment          | nouns                                                          | SUBST              | `mon.er.o` (coin)              |
+| **-ik**   | science, field           | nouns                                                          | SUBST              | `fizik.o` (physics)            |
+| **-ing**  | holder                   | nouns                                                          | SUBST              | `kandel.ing.o` (candlestick)   |
+| **-ism**  | doctrine, practice       | nouns                                                          | SUBST              | `ideal.ism.o` (idealism)       |
+| **-uj**   | container, tree, country | nouns                                                          | SUBST              | `pom.uj.o` (apple tree)        |
+| **-obl**  | multiple                 | numbers                                                        | ADJ                | `du.obl.e` (double)            |
+| **-on**   | fraction                 | numbers                                                        | SUBST              | `kvar.on.o` (quarter)          |
+| **-op**   | collective               | numbers                                                        | SUBST              | `tri.op.o` (trio)              |
 
 **Key Property Inheritance:**
 
@@ -716,14 +718,14 @@ def check_ad(index, morpheme_list):
 
 Esperanto has **6 participle endings** expressing time and voice:
 
-| Ending | Time | Voice | Requires | Example |
-|--------|------|-------|----------|---------|
-| **-ant-** | present | active | any verb | `kur.ant.a` (running) |
-| **-int-** | past | active | any verb | `kur.int.a` (having run) |
-| **-ont-** | future | active | any verb | `kur.ont.a` (about to run) |
-| **-at-** | present | passive | **transitive verb** | `vid.at.a` (being seen) |
-| **-it-** | past | passive | **transitive verb** | `vid.it.a` (seen) |
-| **-ot-** | future | passive | **transitive verb** | `vid.ot.a` (about to be seen) |
+| Ending    | Time    | Voice   | Requires            | Example                       |
+| --------- | ------- | ------- | ------------------- | ----------------------------- |
+| **-ant-** | present | active  | any verb            | `kur.ant.a` (running)         |
+| **-int-** | past    | active  | any verb            | `kur.int.a` (having run)      |
+| **-ont-** | future  | active  | any verb            | `kur.ont.a` (about to run)    |
+| **-at-**  | present | passive | **transitive verb** | `vid.at.a` (being seen)       |
+| **-it-**  | past    | passive | **transitive verb** | `vid.it.a` (seen)             |
+| **-ot-**  | future  | passive | **transitive verb** | `vid.ot.a` (about to be seen) |
 
 **Critical Rule:** Passive participles require transitive verbs.
 
@@ -764,8 +766,8 @@ check_word("forgesita")    # forges.it.a (forgotten)
 # forges = transitive verb → passive participle OK ✓
 
 # Invalid: intransitive verb + passive participle
-check_word("irita")        # ir.it.a (gone-passive)
-# ir = intransitive verb → passive participle FAIL ✗
+check_word("dormita")      # dormita
+# dorm = intransitive verb → passive participle FAIL ✗
 
 # Valid: intransitive verb + active participle
 check_word("irinta")       # ir.int.a (having gone)
@@ -996,11 +998,11 @@ if length_of_word < 5:
 
 **Why Exceptions Are Needed:**
 
-| Word | Problem | Solution |
-|------|---------|----------|
-| `vin` | Could be pronoun `vi.n` (you-accusative) OR wine root `vin.o` | Hardcoded as `vi.n` |
+| Word  | Problem                                                           | Solution            |
+| ----- | ----------------------------------------------------------------- | ------------------- |
+| `vin` | Could be pronoun `vi.n` (you-accusative) OR wine root `vin.o`     | Hardcoded as `vi.n` |
 | `sin` | Could be pronoun `si.n` (self-accusative) OR prefix `sin-` (self) | Hardcoded as `si.n` |
-| `min` | Could be pronoun `mi.n` (me-accusative) OR root `min.o` (mine) | Hardcoded as `mi.n` |
+| `min` | Could be pronoun `mi.n` (me-accusative) OR root `min.o` (mine)    | Hardcoded as `mi.n` |
 
 The dictionary cannot have duplicate keys, so these pronouns are excluded from the dictionary and handled as special cases.
 
@@ -1276,12 +1278,12 @@ morpheme_statistics(text)
 
 ### Computational Complexity
 
-| Operation | Time Complexity | Space Complexity |
-|-----------|----------------|------------------|
-| Dictionary lookup | O(1) average | O(n) where n=10,696 entries |
-| Simple word check | O(1) | O(1) |
+| Operation              | Time Complexity      | Space Complexity               |
+| ---------------------- | -------------------- | ------------------------------ |
+| Dictionary lookup      | O(1) average         | O(n) where n≈10,700 entries    |
+| Simple word check      | O(1)                 | O(1)                           |
 | Compound word analysis | O(m² × d) worst case | O(m) where m=max morphemes (9) |
-| String analysis | O(k × m² × d) | O(k) where k=text length |
+| String analysis        | O(k × m² × d)        | O(k) where k=text length       |
 
 Where:
 - m = number of morphemes in word
