@@ -102,6 +102,11 @@ def restore_capitals(original, analyzed):
     convert words back to their original case after analysis. For example, an
     analysis of the word  'RIĈULO' will produce 'riĉ.ul.o'. This function will take
     'RIĈULO' and 'riĉ.ul.o' to produce 'RIĈ.UL.O'.
+
+    This function also handles hyphens and other non-word characters in the original.
+    For example, 'Esperanto-Kongreso' analyzed as 'esperant.o.kongres.o' will be
+    restored to 'Esperant.o.Kongres.o'.
+
     Params:
          original word
          result of analysis
@@ -109,7 +114,7 @@ def restore_capitals(original, analyzed):
          analyzed result with original case restored
     """
     result = ""
-    index = 0
+    original_index = 0
     original_length = len(original)
     # Note: Sometimes a single accented capital letter becomes two codes
     # when converted to lower case. In other words, length of the analyzed
@@ -119,10 +124,19 @@ def restore_capitals(original, analyzed):
         if ch == ".":
             result += "."
         else:
-            if (index < original_length):
-                result += original[index]
+            # Skip hyphens and other non-word characters in original input
+            while original_index < original_length:
+                original_ch = original[original_index]
+                if not is_word_char(original_ch) or is_hyphen(original_ch):
+                    original_index += 1
+                    continue
+                break
+
+            # Restore capital from original
+            if original_index < original_length:
+                result += original[original_index]
+                original_index += 1
             else:
                 result += ch
-            index += 1
     return result
 # end of restore_capitals

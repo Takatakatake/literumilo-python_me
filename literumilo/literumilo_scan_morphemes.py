@@ -183,6 +183,8 @@ def check_ne(index, morpheme_list):
             entry_str = entry.morpheme
             if entry_str == "ad": return True   # ne.uz.ad.o, ne.far.ad.o are valid.
             if entry_str == "ec": return True
+            if entry_str == "aĵ" or entry_str == "ajx":
+                return True  # ne.regul.aĵ.o -> neregulaĵo
         n += 1;
     return False
 
@@ -528,6 +530,11 @@ def valid_separator(pos, index, morpheme_list):
     # type of ending, eg;  nask-o-tag-O  <-- Substantive, du-a-foj-E  <-- Adverb.
     type_of_ending = morpheme_list.type_of_ending()
 
+    # Allow separators after prefixes/prepositions when the final ending is adjectival or adverbial.
+    if (previous_pos == POS.Prefix or previous_pos == POS.Preposition) and \
+        (type_of_ending == POS.Adjective or type_of_ending == POS.Adverb):
+        return True
+
     # Reconsider this:
     # ''blu.a.ĉiel.o" is an error. An adjective is not joined directly to a substantive.
     if pos == POS.Substantive and previous_pos > POS.Adjective:
@@ -574,7 +581,8 @@ def check_participle(index, morpheme_list):
 
     if previous_pos == POS.Verb or previous_pos == POS.SubstantiveVerb:
         if len(participle_string) == 2:  # -it, -at, and -ot are passive participle endings.
-            if previous_trans != Transitivity.Transitive: return False
+            # Must be transitive or both (not intransitive)
+            if previous_trans == Transitivity.Intransitive: return False
         if index < last:
             if next_string == "aĵ": return True
             if next_string == "ul": return True

@@ -253,9 +253,13 @@ def check_end_ind(index, morpheme_list):
     """
     if index == 0: return False
     previous_entry = morpheme_list.get(index - 1)
+    current_entry = morpheme_list.get(index)
     if previous_entry:
         if previous_entry.transitivity == Transitivity.Transitive:
             return True
+        if current_entry and current_entry.morpheme == "ind":
+            if previous_entry.part_of_speech == POS.Adjective:
+                return True
     return False
 # check_end_ind
 
@@ -385,7 +389,8 @@ def check_in(index, morpheme_list):
 
 def check_ist(index, morpheme_list):
     """Check suffix -ist, meaning 'a professional, supporter of a idea, doctrine, etc.'.
-    Eg. Esperant-ist-o (Esperantisto)
+    Eg. Esperant-ist-o (Esperantisto), social-ist-o (socialisto)
+    Can attach to nouns, verbs, and adjectives.
     For a description of parameters see check_acx().
     """
     if index == 0: return False
@@ -393,7 +398,8 @@ def check_ist(index, morpheme_list):
     if previous_entry:
         pos = previous_entry.part_of_speech
         meaning = previous_entry.meaning
-        if  pos <= POS.Verb and (not is_person(meaning)): return True
+        # Allow nouns, verbs, and adjectives (but not persons)
+        if  pos <= POS.Adjective and (not is_person(meaning)): return True
     return False
 # check_ist
 
@@ -447,6 +453,33 @@ def check_ul(index, morpheme_list):
 
 # check_ul
 
+def check_um(index, morpheme_list):
+    """Check suffix -um.
+    Treat -um as producing a verb so that participle endings can follow.
+    Eg. amik-um-ant-e (to hang out with friends).
+    """
+
+    if index == 0:
+        return False
+
+    previous_entry = morpheme_list.get(index - 1)
+    if not previous_entry:
+        return False
+
+    pos = previous_entry.part_of_speech
+    if pos > POS.Adverb:
+        return False
+
+    current_entry = morpheme_list.get(index)
+    if current_entry:
+        current_entry.part_of_speech = POS.Verb
+        current_entry.transitivity = Transitivity.Both
+        return True
+
+    return False
+
+# check_um
+
 def check_suffix(suffix, index, morpheme_list):
     """Checks synthesis of suffixes.
     Params:
@@ -485,4 +518,5 @@ def check_suffix(suffix, index, morpheme_list):
     if suffix == "op": return check_obl_on_op(index, morpheme_list)
     if suffix == "uj": return check_uj(index, morpheme_list)
     if suffix == "ul": return check_ul(index, morpheme_list)
+    if suffix == "um": return check_um(index, morpheme_list)
     return False

@@ -33,7 +33,18 @@ class AnalysisResult:
         self.word = restore_capitals(original, word)
         self.valid = valid
 
-def check_synthesis(rest_of_word, dictionary, index, morpheme_list, last_morpheme):
+
+def crosses_forced_boundary(offset, length, boundaries):
+    """Return True if the span (offset, offset+length) crosses a forced boundary."""
+    if not boundaries or length <= 0:
+        return False
+    end = offset + length
+    for boundary in boundaries:
+        if offset < boundary < end:
+            return True
+    return False
+
+def check_synthesis(rest_of_word, dictionary, index, morpheme_list, last_morpheme, full_word, boundaries):
     """check_synthesis (kontrolu sintezon)
     This method checks the synthesis of suffixes when they are found,
     and other morphemes (prefixes, roots) after the word has been
@@ -44,12 +55,15 @@ def check_synthesis(rest_of_word, dictionary, index, morpheme_list, last_morphem
         index of morpheme (int)
         list of morphemes
         last_morpheme (t/f)
+        full_word (str) - analyzed word without ending
+        boundaries - forced break positions (tuple[int])
     Return:
         True if valid, False otherwise
     """
 
     entry = morpheme_list.get(index)
-    if not entry: return False
+    if not entry:
+        return False
 
     syn = entry.synthesis
     morph = entry.morpheme
@@ -59,7 +73,7 @@ def check_synthesis(rest_of_word, dictionary, index, morpheme_list, last_morphem
 
     if not last_morpheme:
         # Divide the rest of the word into morphemes.
-        if find_morpheme(rest_of_word, dictionary, index + 1, morpheme_list):
+        if find_morpheme(rest_of_word, dictionary, index + 1, morpheme_list, full_word, boundaries):
             return True
         return False
 
@@ -73,7 +87,7 @@ def check_synthesis(rest_of_word, dictionary, index, morpheme_list, last_morphem
     # end of check_synthesis()
 
 
-def find_morpheme(rest_of_word, dictionary, index, morpheme_list):
+def find_morpheme(rest_of_word, dictionary, index, morpheme_list, full_word, boundaries):
     """find_morpheme (trovu_radikon)
     This function divides a (presumably) compound word into morphemes,
     while checking synthesis. It is recursive.
@@ -82,6 +96,8 @@ def find_morpheme(rest_of_word, dictionary, index, morpheme_list):
         dictionary - a map of word data
         index of morpheme (indekso de radiko)
         morpheme_list - holds a list of previously collected morphemes
+        full_word - analyzed word without ending (for boundary offsets)
+        boundaries - forced break positions (tuple[int])
     Return:
         True for valid synthesis, False for invalid.
     """
@@ -92,42 +108,47 @@ def find_morpheme(rest_of_word, dictionary, index, morpheme_list):
     if index >= MorphemeList.MAX_MORPHEMES:
         return False
 
+    offset = len(full_word) - len(rest_of_word)
+
     if index > 0:
-        entry = dictionary.get(rest_of_word)
-        if entry:
-            # Do we allow this morpheme to join with others?
-            if entry.synthesis != Synthesis.No:
+        if not crosses_forced_boundary(offset, len(rest_of_word), boundaries):
+            entry = dictionary.get(rest_of_word)
+            if entry and entry.synthesis != Synthesis.No:
                 morpheme_list.put(index, entry)
-                valid = check_synthesis(rest_of_word, dictionary, index, morpheme_list, True)
-                if valid: return True
+                valid = check_synthesis(rest_of_word, dictionary, index, morpheme_list, True, full_word, boundaries)
+                if valid:
+                    return True
 
     length_of_word = len(rest_of_word)
-    min_length = 2;  # minimum length of a morpheme
+    min_length = 2  # minimum length of a morpheme
     max_length = length_of_word - 2
 
     # Try to find a valid morpheme, by dividing the rest of the word.
     for size in range(max_length, min_length - 1, -1):
+        if crosses_forced_boundary(offset, size, boundaries):
+            continue
         morpheme = rest_of_word[0:size]
         entry = dictionary.get(morpheme)
-        if entry:
-            # Do we allow this morpheme to join with others?
-            if entry.synthesis != Synthesis.No:
-                rest_of_word2 = rest_of_word[size:]  # Careful, rest_of_word != rest_of_word2
-                morpheme_list.put(index, entry)
-                valid = check_synthesis(rest_of_word2, dictionary, index, morpheme_list, False)
-                if valid: return True
+        if entry and entry.synthesis != Synthesis.No:
+            rest_of_word2 = rest_of_word[size:]  # Careful, rest_of_word != rest_of_word2
+            morpheme_list.put(index, entry)
+            valid = check_synthesis(rest_of_word2, dictionary, index, morpheme_list, False, full_word, boundaries)
+            if valid:
+                return True
 
     # Sometimes there is a separator (a grammatical ending) between morphemes.
     # This is usually done to aid pronunciation. Instead of 'fingr.montri.', most would
     # write 'fingr.o.montr.i'. Other examples are: ĝust.a.temp.e, unu.a.foj.e, etc.
     # This algorithm will accept one separator per word. It must be 'o', 'a' or 'e'.
-    if index == 0 or length_of_word < 3: return False
+    if index == 0 or length_of_word < 3:
+        return False
     separator_entry = EspDictEntry.new_separator(rest_of_word[0])
     if separator_entry:
         morpheme_list.put(index, separator_entry)
         rest_of_word2 = rest_of_word[1:]
-        valid = check_synthesis(rest_of_word2, dictionary, index, morpheme_list, False)
-        if valid: return True
+        valid = check_synthesis(rest_of_word2, dictionary, index, morpheme_list, False, full_word, boundaries)
+        if valid:
+            return True
 
     return False
 
@@ -152,11 +173,19 @@ def check_word(original_word):
         if is_hyphen(second_char):
             entry = esperanto_dictionary.get(original_word)
             if entry:
-                return AnalysisResult(original_word, entry.morpheme, True)
+                display_form = entry.morpheme.replace("-r.", ".r").replace("-", ".")
+                return AnalysisResult(original_word, display_form, True)
             else:
                 return AnalysisResult(original_word, original_word, False)
 
-    original_word = remove_hyphens(original_word)
+    hyphen_boundaries = []
+    stripped_chars = []
+    for ch in original_word:
+        if is_hyphen(ch):
+            hyphen_boundaries.append(len(stripped_chars))
+        else:
+            stripped_chars.append(ch)
+    original_word = "".join(stripped_chars)
 
     # Lower case for analysis.
     word = original_word.lower()
@@ -191,6 +220,7 @@ def check_word(original_word):
     else:
         length = length_of_word - ending.length
         word_without_ending = word[0:length]
+        root_boundaries = tuple(b for b in hyphen_boundaries if b < length)
         entry = esperanto_dictionary.get(word_without_ending)
         if entry:
             if entry.with_ending == WithEnding.Yes:
@@ -203,7 +233,14 @@ def check_word(original_word):
             # The morpheme list needs the ending for later analysis.
             morpheme_list = MorphemeList(ending)
 
-            valid_word = find_morpheme(word_without_ending, esperanto_dictionary, 0, morpheme_list)
+            valid_word = find_morpheme(
+                word_without_ending,
+                esperanto_dictionary,
+                0,
+                morpheme_list,
+                word_without_ending,
+                root_boundaries,
+            )
 
             if valid_word:
                 display_form = morpheme_list.display_form()
